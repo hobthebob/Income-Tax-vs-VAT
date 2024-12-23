@@ -1,0 +1,28 @@
+def calculate_simplified_vat_rate(target_revenue):
+    # 2024 Economic Data (in trillions)
+    gdp = 23.3
+    
+    # Total consumption base with no exemptions
+    personal_consumption = 17.2
+    government_spending = 3.8
+    
+    # Total VAT base (no exemptions)
+    total_vat_base = personal_consumption + government_spending
+    
+    # Calculate required VAT rate with 100% compliance
+    required_rate = (target_revenue / total_vat_base) * 100
+    
+    return {
+        'vat_base': total_vat_base,
+        'required_rate': required_rate,
+        'expected_revenue': target_revenue
+    }
+
+# Calculate for current federal income tax revenue
+target_revenue = 2.18  # trillion dollars
+results = calculate_simplified_vat_rate(target_revenue)
+
+print(f"Simplified VAT Rate Analysis (No Exemptions, 100% Compliance):")
+print(f"Target Revenue: ${results['expected_revenue']:.2f} trillion")
+print(f"Total VAT Base: ${results['vat_base']:.2f} trillion")
+print(f"Required VAT Rate: {results['required_rate']:.1f}%")
