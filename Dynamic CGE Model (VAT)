@@ -1,0 +1,45 @@
+class LongTermVATModel:
+    def __init__(self):
+        self.years = 10
+        self.vat_rate = 0.104
+        self.base_gdp = 23.3  # trillion
+        
+    def project_economic_changes(self):
+        # Initialize arrays for tracking changes
+        years = range(1, self.years + 1)
+        
+        # Model structural economic changes over time
+        def calculate_year_effect(year):
+            # Adjustment factors that change over time
+            adaptation_factor = min(1.0, year / 5)  # Full adaptation by year 5
+            efficiency_gains = min(0.015 * year, 0.06)  # Max 6% efficiency gain
+            investment_recovery = min(0.003 * year, 0.015)  # Max 1.5% investment boost
+            
+            return {
+                'gdp_effect': -3.39 * (1 - adaptation_factor) + efficiency_gains,
+                'productivity': 0.4 * year * adaptation_factor,
+                'investment': -1.52 + (investment_recovery * year),
+                'labor_market': 1.87 * (1 - adaptation_factor),
+                'trade_balance': 1.04 * (1 + 0.1 * year),
+                'consumption': -2.92 * (1 - adaptation_factor),
+                'savings_rate': 0.8 * adaptation_factor,
+                'real_wages': -2.57 * (1 - adaptation_factor) + efficiency_gains
+            }
+        
+        # Calculate yearly effects
+        yearly_effects = [calculate_year_effect(year) for year in years]
+        
+        return yearly_effects
+
+# Run the model
+model = LongTermVATModel()
+results = model.project_economic_changes()
+
+# Print results for key years
+print("Long-term Effects of 10.4% VAT\n")
+for year in [1, 5, 10]:
+    effects = results[year-1]
+    print(f"Year {year}:")
+    for metric, value in effects.items():
+        print(f"* {metric.replace('_', ' ').title()}: {value:+.2f}%")
+    print()
