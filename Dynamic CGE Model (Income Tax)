@@ -1,0 +1,64 @@
+class LongTermIncomeTaxModel:
+    def __init__(self):
+        self.years = 10
+        self.base_gdp = 23.3  # trillion
+        self.revenue = 2.18   # trillion (federal income tax revenue)
+        
+    def project_economic_changes(self):
+        # Initialize arrays for tracking changes
+        years = range(1, self.years + 1)
+        
+        # Model structural economic changes over time
+        def calculate_year_effect(year):
+            # Adjustment factors that change over time
+            adaptation_factor = min(1.0, year / 5)  # Full adaptation by year 5
+            efficiency_gains = min(0.012 * year, 0.048)  # Max 4.8% efficiency gain
+            investment_recovery = min(0.002 * year, 0.012)  # Max 1.2% investment boost
+            
+            # Labor market effects specific to income tax
+            labor_distortion = 0.90 * (1 - adaptation_factor)
+            wage_effect = -1.40 * (1 - adaptation_factor)
+            
+            # Trade effects consider embedded labor costs
+            trade_effect = -0.31 * (1 + 0.08 * year)
+            export_competitiveness = -2.40 * (1 - 0.12 * year)
+            
+            return {
+                'gdp_effect': -1.80 * (1 - adaptation_factor) + efficiency_gains,
+                'productivity': 0.20 * year * adaptation_factor,
+                'investment': -1.10 + (investment_recovery * year),
+                'labor_market': labor_distortion * (1 - adaptation_factor),
+                'trade_balance': trade_effect,
+                'export_growth': export_competitiveness,
+                'consumption': -1.60 * (1 - adaptation_factor),
+                'savings_rate': 0.40 * adaptation_factor,
+                'real_wages': wage_effect + efficiency_gains,
+                'government_revenue': 0.42 * (1 + 0.15 * year),
+                'formal_economy': 0.28 * year,
+                'tax_efficiency': 1.24 * (1 + 0.20 * year)
+            }
+            
+        
+        # Compile results for each year
+        results = []
+        for year in years:
+            year_effects = calculate_year_effect(year)
+            
+            results.append({
+                'year': year,
+            })
+            
+        return results
+
+# Run the model
+model = LongTermIncomeTaxModel()
+results = model.project_economic_changes()
+
+# Print results for key years
+for year in [1, 5, 10]:
+    data = results[year-1]
+    print(f"\nYear {year} Results:")
+    
+    print("\nEconomic Effects:")
+    for metric, value in data['economic'].items():
+        print(f"* {metric.replace('_', ' ').title()}: {value:+.2f}%")
