@@ -1,0 +1,124 @@
+import numpy as np
+
+class ComprehensiveVATModel:
+    def __init__(self):
+        # Base economic parameters (in trillions)
+        self.gdp = 23.3
+        self.consumption = 17.2
+        self.investment = 4.1
+        self.government = 3.8
+        self.exports = 2.5
+        self.imports = 3.1
+        
+        # Income levels
+        self.income_levels = {
+            'high': 210000,
+            'middle': 70784,
+            'low': 15000
+        }
+        
+    def calculate_distributional_effects(self, vat_rate):
+        results = {}
+        for income_group, income in self.income_levels.items():
+            # Calculate consumption based on income-specific MPCs
+            if income_group == 'high':
+                mpc = 0.65
+            elif income_group == 'middle':
+                mpc = 0.75
+            else:
+                mpc = 0.85
+                
+            consumption = income * mpc
+            vat_paid = consumption * vat_rate
+            
+            # Calculate MPC/MPS changes based on higher rate
+            mpc_change = -min(3.5, (vat_paid/income) * 100 / 3)
+            
+            results[income_group] = {
+                'vat_paid': vat_paid,
+                'vat_percent': (vat_paid/income) * 100,
+                'mpc_change': mpc_change,
+                'mps_change': abs(mpc_change)
+            }
+        return results
+    
+    def calculate_macro_effects(self, vat_rate):
+        # Higher rate causes stronger effects
+        consumption_impact = -2.9 * (vat_rate/0.089)  # Scaled from original 8.9% model
+        investment_impact = -1.5 * (vat_rate/0.089)
+        government_impact = 1.1 * (vat_rate/0.089)
+        
+        # Calculate other indicators
+        inflation = vat_rate * 0.85  # Pass-through rate
+        unemployment = 1.85 * (vat_rate/0.089)
+        real_wages = -2.5 * (vat_rate/0.089)
+        
+        return {
+            'gdp_impact': (consumption_impact * 0.68 + 
+                          investment_impact * 0.18 + 
+                          government_impact * 0.14),
+            'consumption': consumption_impact,
+            'investment': investment_impact,
+            'government': government_impact,
+            'inflation': inflation,
+            'unemployment': unemployment,
+            'real_wages': real_wages
+        }
+    
+    def calculate_trade_effects(self, vat_rate):
+        export_elasticity = -0.8
+        import_elasticity = -0.6
+        
+        # Export effects (positive due to VAT rebate)
+        export_price_effect = -(vat_rate * 0.7)
+        export_change = export_price_effect * export_elasticity
+        
+        # Import effects (negative due to VAT)
+        import_price_effect = vat_rate
+        import_change = import_price_effect * import_elasticity
+        
+        trade_balance_change = ((self.exports * (1 + export_change) - 
+                               self.imports * (1 + import_change)) - 
+                              (self.exports - self.imports)) / self.gdp
+        
+        return {
+            'export_change': export_change * 100,
+            'import_change': import_change * 100,
+            'trade_balance': trade_balance_change * 100,
+            'competitiveness': export_price_effect * 100
+        }
+
+# Run the model with 10.4% VAT
+model = ComprehensiveVATModel()
+vat_rate = 0.104
+
+# Get results
+dist_effects = model.calculate_distributional_effects(vat_rate)
+macro_effects = model.calculate_macro_effects(vat_rate)
+trade_effects = model.calculate_trade_effects(vat_rate)
+
+# Print comprehensive results
+print("CGE Model Results for 10.4% VAT\n")
+
+print("1. Distributional Effects:")
+for group, effects in dist_effects.items():
+    print(f"\n{group.title()} Income (${model.income_levels[group]:,}):")
+    print(f"* VAT Paid: ${effects['vat_paid']:,.0f}")
+    print(f"* VAT as % of Income: {effects['vat_percent']:.2f}%")
+    print(f"* MPC Change: {effects['mpc_change']:.2f} percentage points")
+    print(f"* MPS Change: +{effects['mps_change']:.2f} percentage points")
+
+print("\n2. Macroeconomic Effects:")
+print(f"GDP Impact: {macro_effects['gdp_impact']:.2f}%")
+print(f"* Consumption: {macro_effects['consumption']:.2f}%")
+print(f"* Investment: {macro_effects['investment']:.2f}%")
+print(f"* Government Spending: +{macro_effects['government']:.2f}%")
+print(f"* Inflation: +{macro_effects['inflation']:.2f}%")
+print(f"* Unemployment: +{macro_effects['unemployment']:.2f} percentage points")
+print(f"* Real Wages: {macro_effects['real_wages']:.2f}%")
+
+print("\n3. International Trade Effects:")
+print(f"Export Volume Change: {trade_effects['export_change']:.2f}%")
+print(f"Import Volume Change: {trade_effects['import_change']:.2f}%")
+print(f"Trade Balance Effect: {trade_effects['trade_balance']:.2f}% of GDP")
+print(f"Price Competitiveness: {trade_effects['competitiveness']:.2f}%")
