@@ -1,0 +1,9 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite it as below."
+authors:
+  - family-names: Naizghi
+    given-names: Haben
+title: "Income-Tax-vs-VAT"
+version: 1.0.0
+doi: 10.5281/zenodo.14560039
+date-released: 2024/12/26
