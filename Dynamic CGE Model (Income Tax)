@@ -37,8 +37,7 @@ class LongTermIncomeTaxModel:
                 'formal_economy': 0.28 * year,
                 'tax_efficiency': 1.24 * (1 + 0.20 * year)
             }
-            
-        
+
         # Compile results for each year
         results = []
         for year in years:
@@ -46,6 +45,7 @@ class LongTermIncomeTaxModel:
             
             results.append({
                 'year': year,
+                'economic': year_effects,
             })
             
         return results
